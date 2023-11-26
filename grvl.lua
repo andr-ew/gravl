@@ -8,7 +8,7 @@
 -- (128, 64, or midigrid)
 --
 -- documentation:
--- github.com/andr-ew/lib-grvl
+-- github.com/andr-ew/grvl
 
 --device globals (edit for midigrid if needed)
 

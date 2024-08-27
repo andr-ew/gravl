@@ -2,8 +2,6 @@
 
 dual data pavement. 
 
-a spiritual successor to [anaphora](https://github.com/andr-ew/prosody#anaphora) & [dirge](https://github.com/andr-ew/prosody#dirge).
-
 a digital tape machine – joyfully abandoning transparency. recorded sound is treated as raw, unadulterated data (like loose sediment), subject to multiple layers of erosion in the time & amplitude domains, clicks & all. you might hate it.
 
 a spiritual successor to [anaphora](https://github.com/andr-ew/prosody#anaphora) & [dirge](https://github.com/andr-ew/prosody#dirge), a strange cousin of [ndls](https://github.com/andr-ew/ndls)

@@ -45,7 +45,7 @@ local function Destination(args)
                 -- text = util.round(params:get(id), 0.01),
                 text = string.format(
                     '%.2f %s', 
-                    patcher.get_destination_plus_param(id),
+                    grvl.get_param(id),
                     spec.units
                 ),
                 level = props.levels[2],
@@ -72,7 +72,7 @@ local function Gfx()
 
     return function(props)
         if crops.mode == 'redraw' and crops.device == 'screen' then 
-            local d = patcher.get_destination_plus_param('detritus_'..props.chan)
+            local d = grvl.get_param('detritus_'..props.chan)
             for ix,_ in ipairs(data) do
                 for iy = 1,4 do
                     screen.level(data[(ix - 1 + (d - 1)*32*(iy))%#data + 1])
@@ -82,7 +82,7 @@ local function Gfx()
                 end
             end
 
-            local buf = patcher.get_destination_plus_param('buffer_'..props.chan)
+            local buf = grvl.get_param('buffer_'..props.chan)
             if 
                 buffers[buf].recorded 
                 or buffers[buf].manual 
@@ -182,11 +182,11 @@ local function App(args)
                     -- screen.stroke()
 
                     local st = (
-                        patcher.get_destination_plus_param('loop_start_'..chan)
+                        grvl.get_param('loop_start_'..chan)
                         / grvl.time_volt_scale
                     )
                     local en = (
-                        patcher.get_destination_plus_param('loop_end_'..chan) 
+                        grvl.get_param('loop_end_'..chan) 
                         / grvl.time_volt_scale
                     )
                     local min = math.min(st, en)
@@ -201,7 +201,7 @@ local function App(args)
                     screen.pixel(left + max*width, top)
                     screen.fill()
 
-                    local buf = patcher.get_destination_plus_param('buffer_'..chan)
+                    local buf = grvl.get_param('buffer_'..chan)
                     if 
                         buffers[buf].recorded 
                         or buffers[buf].manual 

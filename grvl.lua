@@ -38,7 +38,7 @@ Produce = {}
 Produce.grid = include 'lib/produce/grid'
 
 patcher = include 'lib/patcher/patcher'
-Patcher = include 'lib/patcher/ui'
+Patcher = include 'lib/patcher/ui/using_source_keys'
 
 --script files
 
@@ -92,7 +92,7 @@ end
 
 --     return function()
 --         _text{ x = x[1], y = y[1], text = 'grvl' }
---         _text{ x = x[1], y = y[1] + 11*1, text = 'norns screen forthcoming' }
+-Patcher.screen.destination(-         _text{ x = x[1], y = y[1] + 11*1, text = 'norns screen forthcoming' }
 --         _text{ x = x[1], y = y[1] + 11*2, text = 'arc also forthcoming' }
 --         _text{ x = x[1], y = y[1] + 11*3, text = 'have fun in the params menu' }
 --         _text{ x = x[1], y = y[1] + 11*4, text = 'and on the grid' }
@@ -140,6 +140,8 @@ function init()
 
     grvl.start_polls()
     params:bang()
+
+    mod_src.init_crow()
 end
 
 function cleanup()

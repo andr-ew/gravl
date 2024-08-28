@@ -31,7 +31,6 @@ do
         crops.dirty.arc = true
     end
 
-    params:add_separator('patcher assignments')
-
+    params:add_group('assignments', #patcher.destinations)
     patcher.add_assginment_params(action)
 end

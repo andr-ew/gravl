@@ -24,13 +24,11 @@ do
     end
 
     local function action(dest, v)
-        mod_src.crow.update()
-
         crops.dirty.grid = true
         crops.dirty.screen = true
         crops.dirty.arc = true
     end
 
     params:add_group('assignments', #patcher.destinations)
-    patcher.add_assginment_params(action)
+    patcher.add_assignment_params(action)
 end

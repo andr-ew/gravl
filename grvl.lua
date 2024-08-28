@@ -2,7 +2,7 @@
 --
 -- dual data pavement
 --
--- version 0.2.0 @andrew
+-- version 0.3.0 @andrew
 --
 -- recommended: grid 
 -- (128, 64, or midigrid)
@@ -92,7 +92,7 @@ end
 
 --     return function()
 --         _text{ x = x[1], y = y[1], text = 'grvl' }
--Patcher.screen.destination(-         _text{ x = x[1], y = y[1] + 11*1, text = 'norns screen forthcoming' }
+--Patcher.screen.destination(-         _text{ x = x[1], y = y[1] + 11*1, text = 'norns screen forthcoming' }
 --         _text{ x = x[1], y = y[1] + 11*2, text = 'arc also forthcoming' }
 --         _text{ x = x[1], y = y[1] + 11*3, text = 'have fun in the params menu' }
 --         _text{ x = x[1], y = y[1] + 11*4, text = 'and on the grid' }

@@ -74,12 +74,15 @@ local function Gfx()
         if crops.mode == 'redraw' and crops.device == 'screen' then 
             local d = grvl.get_param('detritus_'..props.chan)
             for ix,_ in ipairs(data) do
+                screen.level(data[(ix - 1)%#data + 1])
                 for iy = 1,4 do
-                    screen.level(data[(ix - 1 + (d - 1)*32*(iy))%#data + 1])
-                    screen.move(ix, 32*(props.chan - 1) + 8*(iy - 1))
-                    screen.line_rel(0, 8)
-                    screen.stroke()
+                    local det_off = (d - 1)*32*(iy)
+                    local x, y = (ix + det_off)%#data, 32*(props.chan - 1) + 8*(iy - 1)
+                    -- screen.move()
+                    -- screen.line_rel(0, 8)
+                    screen.rect(x, y, 1, 8)
                 end
+                screen.stroke()
             end
 
             local buf = grvl.get_param('buffer_'..props.chan)
@@ -88,13 +91,13 @@ local function Gfx()
                 or buffers[buf].manual 
                 or buffers[buf].loaded
             then
-                local r = grvl.get_rate_w(props.chan)
+                local r = grvl.values.rate_w[props.chan]
                 --mutating states in the render loop -- shhh! don't tell anyone
             
                 idx_last = idx
                 idx = (idx - 1 + r)%#data + 1
 
-                data[idx//1] = val 
+                data[idx//1] = val
 
                 if (r>0 and idx<idx_last) or (r<0 and idx>idx_last) then
                     val = (val + 11) % 15

@@ -11,15 +11,15 @@ do
     for i = 1,2 do
         params:add{
             id = 'patcher_source_'..i, name = 'source '..i,
-            type = 'option', options = patcher.sources,
-            default = tab.key(patcher.sources, 'crow in '..i)
+            type = 'option', options = patcher.src_names,
+            default = tab.key(patcher.sources, 'crow_in_'..i)
         }
     end
     for i = 3,4 do
         params:add{
             id = 'patcher_source_'..i, name = 'source '..i,
-            type = 'option', options = patcher.sources,
-            default = tab.key(patcher.sources, 'lfo '..(i-2))
+            type = 'option', options = patcher.src_names,
+            default = tab.key(patcher.sources, 'lfo_'..(i-2))
         }
     end
 

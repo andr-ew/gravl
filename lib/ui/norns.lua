@@ -61,57 +61,70 @@ local function Destination(args)
     end
 end
 
-local function Gfx()
+local function Gfx(thing)
     local data = {}
     for i = 1,128 do
-        data[i] = 0
+        local init = (i > (thing * 64) and i < (thing + 1)*64) and math.random(1, 12) or 0
+        data[i] = init
     end
-    local idx_last = 0
-    local idx = 0
+    local idx = math.random(1, #data)
+    local idx_last = idx
     local val = 8
 
     return function(props)
         if crops.mode == 'redraw' and crops.device == 'screen' then 
-            local d = grvl.get_param('detritus_'..props.chan)
-            for ix,_ in ipairs(data) do
-                screen.level(data[(ix - 1)%#data + 1])
-                for iy = 1,4 do
-                    local det_off = (d - 1)*32*(iy)
-                    local x, y = (ix + det_off)%#data, 32*(props.chan - 1) + 8*(iy - 1)
-                    -- screen.move()
-                    -- screen.line_rel(0, 8)
-                    screen.rect(x, y, 1, 8)
-                end
-                screen.stroke()
-            end
-
-            local buf = grvl.get_param('buffer_'..props.chan)
-            if 
-                buffers[buf].recorded 
-                or buffers[buf].manual 
-                or buffers[buf].loaded
-            then
-                local r = grvl.values.rate_w[props.chan]
-                --mutating states in the render loop -- shhh! don't tell anyone
-            
-                idx_last = idx
-                idx = (idx - 1 + r)%#data + 1
-
-                data[idx//1] = val
-
-                if (r>0 and idx<idx_last) or (r<0 and idx>idx_last) then
-                    val = (val + 11) % 15
-                end
-            end
-
-            for x = 0, 1 do
-                for y = 0, 1 do
-                    if math.random() < (1/(8 * grvl.get_param('bit_depth_'..(x+1)))) then
-                        screen.rect(x * 64, y * 32, 64, 32)
-                        screen.fill()
-                        -- screen.fill((math.random() * 15) // 1)
+            local bit = 9 - (9 - grvl.get_param('bit_depth_'..1))
+            if math.random() > (1/(8 * bit)) then
+                local coin = (math.random() < (1/(4 * bit))) and math.random(0, 4) or 0
+                local d = grvl.get_param('detritus_'..props.chan) + coin
+                for ix,_ in ipairs(data) do
+                    local lvl = data[(ix - 1)%#data + 1]
+                    if lvl>0 then
+                        screen.level(lvl)
+                        for iy = 1,4 do
+                            local det_off = (d - 1)*32*(iy)
+                            local x, y = (ix + det_off)%#data, 32*(props.chan - 1) + 8*(iy - 1)
+                            -- screen.move()
+                            -- screen.line_rel(0, 8)
+                            screen.rect(x, y, 1, 8)
+                        end
+                        screen.stroke()
                     end
                 end
+
+                local buf = grvl.get_param('buffer_'..props.chan)
+                if 
+                    buffers[buf].recorded 
+                    or buffers[buf].manual 
+                    or buffers[buf].loaded
+                then
+                    local r = grvl.values.rate_w[props.chan]
+                    --mutating states in the render loop -- shhh! don't tell anyone
+                
+                    idx_last = idx
+                    idx = (idx - 1 + r)%#data + 1
+
+                    data[idx//1] = val
+
+                    if (r>0 and idx<idx_last) or (r<0 and idx>idx_last) then
+                        val = (val + 11) % 15
+                    end
+                end
+
+                for x = 0, 1 do
+                    for y = 0, 1 do
+                        if math.random() < (1/(32 * bit)) then
+                            screen.rect(x * 64, y * 32, 64, 32)
+                            if math.random() > 0.5 then screen.level(0) end
+                            screen.fill()
+                            -- screen.fill((math.random() * 15) // 1)
+                        end
+                    end
+                end
+            else
+                screen.rect(0, 0, 64, 64)
+                screen.level(15)
+                screen.fill()
             end
         end
     end
@@ -143,7 +156,7 @@ local function App(args)
     local view = 0
     local _view = Key.toggle()
 
-    local _gfxs = { Gfx(), Gfx() }
+    local _gfxs = { Gfx(math.random(0, 1)), Gfx(math.random(0, 1)) }
 
     return function()
         _view{

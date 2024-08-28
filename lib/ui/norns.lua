@@ -103,6 +103,16 @@ local function Gfx()
                     val = (val + 11) % 15
                 end
             end
+
+            for x = 0, 1 do
+                for y = 0, 1 do
+                    if math.random() < (1/(8 * grvl.get_param('bit_depth_'..(x+1)))) then
+                        screen.rect(x * 64, y * 32, 64, 32)
+                        screen.fill()
+                        -- screen.fill((math.random() * 15) // 1)
+                    end
+                end
+            end
         end
     end
 end

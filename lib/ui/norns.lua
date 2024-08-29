@@ -13,20 +13,22 @@ end
 local text_mul_y = 9
 
 local function Destination(args)
-    local id = args.id
-    local p = params:lookup_param(id)
-    local spec = p.controlspec
-    local name = p.name
-
     local _label = Screen.text()
     local _value = Patcher.screen.destination(Screen.text())
 
     --TODO: select component by param type (p.t)
-    local _enc = Patcher.enc.destination(Enc.control()) 
+    local _enc = {
+        control = Patcher.enc.destination(Enc.control()),
+        number = Patcher.enc.destination(Enc.integer())
+    }
 
     return function(props)
+        local id = props.id
         local x = x[props.map_x] + (props.map_x >2 and (w/4 - 1) or 0)
         local flow = props.map_x >2 and 'left' or 'right'
+        local p = params:lookup_param(id)
+        local spec = p.controlspec
+        local name = p.name
 
         _label{
             x = x,
@@ -46,15 +48,16 @@ local function Destination(args)
                 text = string.format(
                     '%.2f %s', 
                     grvl.get_param(id),
-                    spec.units
+                    spec and spec.units or ''
                 ),
                 level = props.levels[2],
                 font_face = 2,
                 flow = flow,
             })
-            _enc(id, grvl.active_src, {
+            _enc[spec and 'control' or 'number'](id, grvl.active_src, {
                 n = (props.map_x - 1)%2 + 2,
                 controlspec = spec,
+                min = p.min, max = p.max,
                 state = grvl.of_param(id),
             })
         end
@@ -131,8 +134,6 @@ local function Gfx(thing)
 end
 
 local function App(args)
-    local map = args.map
-
     local _focus = Enc.integer()
     
     local _recs = {}
@@ -140,15 +141,11 @@ local function App(args)
         _recs[chan] = Patcher.key_screen.destination(Components.norns.toggle_hold())
     end
 
-    local _map = {}
+    local _destinations = {}
     for y = 1,4 do
-        _map[y] = {}
+        _destinations[y] = {}
         for x = 1,4 do
-            if map[y][x] then
-                local prefix = map[y][x]
-                local chan = (x <3) and 1 or 2
-                _map[y][x] = Destination{ id = prefix..chan }
-            end
+            _destinations[y][x] = Destination()
         end
     end
 
@@ -158,7 +155,9 @@ local function App(args)
 
     local _gfxs = { Gfx(math.random(0, 1)), Gfx(math.random(0, 1)) }
 
-    return function()
+    return function(props)
+        local map = grvl.map 
+
         _view{
             n = 1, state = crops.of_variable(view, function(v) 
                 view = v
@@ -261,8 +260,10 @@ local function App(args)
 
             for y = 1,4 do for x = 1,4 do
                 local chan = (x <3) and 1 or 2
+                local prefix = map[y][x]
 
-                _map[y][x]{
+                _destinations[y][x]{
+                    id = prefix..chan,
                     focused = (y == f_y and chan == f_x),
                     map_x = x,
                     map_y = y,

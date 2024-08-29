@@ -1,9 +1,3 @@
---add LFO params
-for i = 1,2 do
-    params:add_separator('lfo '..i)
-    mod_src.lfos[i]:add_params('lfo_'..i)
-end
-
 --add source & destination params
 do
     params:add_separator('patcher sources')

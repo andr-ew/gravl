@@ -12,6 +12,8 @@ do
 end
 local text_mul_y = 9
 
+local label_width = w/4 - 2
+
 local function Destination(args)
     local _label = Screen.text()
     local _value = Patcher.screen.destination(Screen.text())
@@ -34,7 +36,7 @@ local function Destination(args)
             x = x,
             -- x = x[props.map_x] + w/8 - 2,
             y = y[1] + text_mul_y*props.map_y,
-            text = string.upper(name),
+            text = util.trim_string_to_width(string.upper(name), label_width - 1),
             level = props.levels_label[props.focused and 2 or 1],
             font_face = 2,
             flow = flow,
@@ -185,7 +187,7 @@ local function App(args)
                     screen.rect(
                         x[i + (f_x - 1)*2] + off,
                         y[1] + text_mul_y*(f_y - 1) + 2,
-                        w/4 - 2,
+                        label_width,
                         8 
                     )
                     screen.fill()

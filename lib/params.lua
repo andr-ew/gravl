@@ -1,6 +1,6 @@
 --add source & destination params
 do
-    params:add_separator('patcher sources')
+    params:add_separator('patcher')
 
     for i = 1,2 do
         params:add{

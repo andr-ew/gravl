@@ -31,12 +31,13 @@ local function Destination(args)
         local p = params:lookup_param(id)
         local spec = p.controlspec
         local name = p.name
+        local text = grvl.param_nicknames[name] or util.trim_string_to_width(name, label_width - 1)
 
         _label{
             x = x,
             -- x = x[props.map_x] + w/8 - 2,
             y = y[1] + text_mul_y*props.map_y,
-            text = util.trim_string_to_width(string.upper(name), label_width - 1),
+            text = string.upper(text),
             level = props.levels_label[props.focused and 2 or 1],
             font_face = 2,
             flow = flow,

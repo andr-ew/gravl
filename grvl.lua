@@ -16,6 +16,7 @@ g = grid.connect()
 a = arc.connect()
 
 arc_connected = a and (not (a.name == 'none'))
+local wide = g and g.device and g.device.cols >= 16 or false
 arc2 = a and a.device and string.match(a.device.name, 'arc 2')
 
 --system libs
@@ -74,7 +75,9 @@ end
 --connect UI components
 
 local _app = {
-    grid = App.grid(),
+    grid = App.grid{
+        wide = wide,
+    },
     arc = App.arc{ 
         rotated = arc2,
         grid_wide = wide,
@@ -95,17 +98,19 @@ crops.connect_enc(_app.norns)
 
 function init()
     mod_src.lfos.reset_params()
-
-    -- params:read()
     
     for i = 1,2 do mod_src.lfos[i]:start() end
 
     grvl.start_polls()
+
+    params:read()
     params:bang()
+    grvl.reset_params()
 
     mod_src.init_crow()
 end
 
 function cleanup()
     poll.clear_all()
+    if params:string('autosave pset') == 'yes' then params:write() end
 end

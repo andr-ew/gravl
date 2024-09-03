@@ -1,47 +1,26 @@
 local src = {}
 
 do
-    src.crow = {}
-
+    local add_actions = {}
     for i = 1,2 do
-        patcher.add_source('crow in '..i)
+        add_actions[i] = patcher.crow.add_source(i)
     end
 
-    -- src: https://github.com/monome/norns/blob/e8ae36069937df037e1893101e73bbdba2d8a3db/lua/core/crow.lua#L14
-    local function re_enable_clock_source_crow()
-        if params.lookup["clock_source"] then
-            if params:string("clock_source") == "crow" then
-                norns.crow.clock_enable()
-            end
-        end
+    local function crow_add()
+        for _,action in ipairs(add_actions) do action() end
     end
+    norns.crow.add = crow_add
 
-    function src.crow.update()
-        local mapped = { false, false }
 
-        for _,dest in ipairs(patcher.destinations) do
-            local source = patcher.get_assignment(dest)
-            if source == 'crow in 1' then mapped[1] = true
-            elseif source == 'crow in 2' then mapped[2] = true end
-        end
-        
-        for i, map in ipairs(mapped) do if map then
-            crow.input[i].mode('stream', 0.01)
-            crow.input[i].stream = function(v)
-                patcher.set_source('crow in '..i, v)
-            end
-        end end
-        if not mapped[1] then re_enable_clock_source_crow() end
-    end
-
-    norns.crow.add = src.crow.update
+    src.init_crow = crow_add
 end
 
 do
     src.lfos = {}
+
     
     for i = 1,2 do
-        patcher.add_source('lfo '..i)
+        local stream = patcher.add_source{ name = 'lfo '..i, id = 'lfo_'..i }
 
         src.lfos[i] = lfos:add{
             min = 0,
@@ -49,9 +28,7 @@ do
             depth = 0.1,
             mode = 'free',
             period = 0.25,
-            action = function(scaled, raw) 
-                patcher.set_source('lfo '..i, scaled) 
-            end,
+            action = stream,
         }
     end
 
@@ -65,7 +42,7 @@ do
 end
 
 do
-    patcher.add_source('midi')
+    local stream = patcher.add_source{ name = 'midi', id = 'midi' }
 
     local middle_c = 60
 
@@ -77,7 +54,7 @@ do
             local note = msg.note
             local volt = (note - middle_c)/12
 
-            patcher.set_source('midi', volt)
+            stream(volt) 
         end
     end
 

@@ -12,27 +12,32 @@ do
 end
 local text_mul_y = 9
 
-local function Destination(args)
-    local id = args.id
-    local p = params:lookup_param(id)
-    local spec = p.controlspec
-    local name = p.name
+local label_width = w/4 - 2
 
+local function Destination(args)
     local _label = Screen.text()
     local _value = Patcher.screen.destination(Screen.text())
 
     --TODO: select component by param type (p.t)
-    local _enc = Patcher.enc.destination(Enc.control()) 
+    local _enc = {
+        control = Patcher.enc.destination(Enc.control()),
+        number = Patcher.enc.destination(Enc.integer())
+    }
 
     return function(props)
+        local id = props.id
         local x = x[props.map_x] + (props.map_x >2 and (w/4 - 1) or 0)
         local flow = props.map_x >2 and 'left' or 'right'
+        local p = params:lookup_param(id)
+        local spec = p.controlspec
+        local name = p.name
+        local text = grvl.param_nicknames[name] or util.trim_string_to_width(name, label_width - 1)
 
         _label{
             x = x,
             -- x = x[props.map_x] + w/8 - 2,
             y = y[1] + text_mul_y*props.map_y,
-            text = string.upper(name),
+            text = string.upper(text),
             level = props.levels_label[props.focused and 2 or 1],
             font_face = 2,
             flow = flow,
@@ -45,68 +50,93 @@ local function Destination(args)
                 -- text = util.round(params:get(id), 0.01),
                 text = string.format(
                     '%.2f %s', 
-                    patcher.get_destination_plus_param(id),
-                    spec.units
+                    grvl.get_param(id),
+                    spec and spec.units or ''
                 ),
                 level = props.levels[2],
                 font_face = 2,
                 flow = flow,
             })
-            _enc(id, grvl.active_src, {
+            _enc[spec and 'control' or 'number'](id, grvl.active_src, {
                 n = (props.map_x - 1)%2 + 2,
                 controlspec = spec,
+                min = p.min, max = p.max,
                 state = grvl.of_param(id),
             })
         end
     end
 end
 
-local function Gfx()
+local function Gfx(thing)
     local data = {}
     for i = 1,128 do
-        data[i] = 0
+        local init = (i > (thing * 64) and i < (thing + 1)*64) and math.random(1, 12) or 0
+        data[i] = init
     end
-    local idx_last = 0
-    local idx = 0
+    local idx = math.random(1, #data)
+    local idx_last = idx
     local val = 8
 
     return function(props)
         if crops.mode == 'redraw' and crops.device == 'screen' then 
-            local d = patcher.get_destination_plus_param('detritus_'..props.chan)
-            for ix,_ in ipairs(data) do
-                for iy = 1,4 do
-                    screen.level(data[(ix - 1 + (d - 1)*32*(iy))%#data + 1])
-                    screen.move(ix, 32*(props.chan - 1) + 8*(iy - 1))
-                    screen.line_rel(0, 8)
-                    screen.stroke()
+            local bit = 9 - (9 - grvl.get_param('bit_depth_'..1))
+            if math.random() > (1/(8 * bit)) then
+                local coin = (math.random() < (1/(4 * bit))) and math.random(0, 4) or 0
+                local d = grvl.get_param('detritus_'..props.chan) + coin
+                for ix,_ in ipairs(data) do
+                    local lvl = data[(ix - 1)%#data + 1]
+                    if lvl>0 then
+                        screen.level(lvl)
+                        for iy = 1,4 do
+                            local det_off = (d - 1)*32*(iy)
+                            local x, y = (ix + det_off)%#data, 32*(props.chan - 1) + 8*(iy - 1)
+                            -- screen.move()
+                            -- screen.line_rel(0, 8)
+                            screen.rect(x, y, 1, 8)
+                        end
+                        screen.stroke()
+                    end
                 end
-            end
 
-            local buf = patcher.get_destination_plus_param('buffer_'..props.chan)
-            if 
-                buffers[buf].recorded 
-                or buffers[buf].manual 
-                or buffers[buf].loaded
-            then
-                local r = grvl.get_rate_w(props.chan)
-                --mutating states in the render loop -- shhh! don't tell anyone
-            
-                idx_last = idx
-                idx = (idx - 1 + r)%#data + 1
+                local buf = grvl.get_param('buffer_'..props.chan)
+                if 
+                    buffers[buf].recorded 
+                    or buffers[buf].manual 
+                    or buffers[buf].loaded
+                then
+                    local r = grvl.values.rate_w[props.chan]
+                    --mutating states in the render loop -- shhh! don't tell anyone
+                
+                    idx_last = idx
+                    idx = (idx - 1 + r)%#data + 1
 
-                data[idx//1] = val 
+                    data[idx//1] = val
 
-                if (r>0 and idx<idx_last) or (r<0 and idx>idx_last) then
-                    val = (val + 11) % 15
+                    if (r>0 and idx<idx_last) or (r<0 and idx>idx_last) then
+                        val = (val + 11) % 15
+                    end
                 end
+
+                for x = 0, 1 do
+                    for y = 0, 1 do
+                        if math.random() < (1/(32 * bit)) then
+                            screen.rect(x * 64, y * 32, 64, 32)
+                            if math.random() > 0.5 then screen.level(0) end
+                            screen.fill()
+                            -- screen.fill((math.random() * 15) // 1)
+                        end
+                    end
+                end
+            else
+                screen.rect(0, 0, 64, 64)
+                screen.level(15)
+                screen.fill()
             end
         end
     end
 end
 
 local function App(args)
-    local map = args.map
-
     local _focus = Enc.integer()
     
     local _recs = {}
@@ -114,15 +144,11 @@ local function App(args)
         _recs[chan] = Patcher.key_screen.destination(Components.norns.toggle_hold())
     end
 
-    local _map = {}
+    local _destinations = {}
     for y = 1,4 do
-        _map[y] = {}
+        _destinations[y] = {}
         for x = 1,4 do
-            if map[y][x] then
-                local prefix = map[y][x]
-                local chan = (x <3) and 1 or 2
-                _map[y][x] = Destination{ id = prefix..chan }
-            end
+            _destinations[y][x] = Destination()
         end
     end
 
@@ -130,9 +156,11 @@ local function App(args)
     local view = 0
     local _view = Key.toggle()
 
-    local _gfxs = { Gfx(), Gfx() }
+    local _gfxs = { Gfx(math.random(0, 1)), Gfx(math.random(0, 1)) }
 
-    return function()
+    return function(props)
+        local map = grvl.map 
+
         _view{
             n = 1, state = crops.of_variable(view, function(v) 
                 view = v
@@ -160,7 +188,7 @@ local function App(args)
                     screen.rect(
                         x[i + (f_x - 1)*2] + off,
                         y[1] + text_mul_y*(f_y - 1) + 2,
-                        w/4 - 2,
+                        label_width,
                         8 
                     )
                     screen.fill()
@@ -182,11 +210,11 @@ local function App(args)
                     -- screen.stroke()
 
                     local st = (
-                        patcher.get_destination_plus_param('loop_start_'..chan)
+                        grvl.get_param('loop_start_'..chan)
                         / grvl.time_volt_scale
                     )
                     local en = (
-                        patcher.get_destination_plus_param('loop_end_'..chan) 
+                        grvl.get_param('loop_end_'..chan) 
                         / grvl.time_volt_scale
                     )
                     local min = math.min(st, en)
@@ -201,7 +229,7 @@ local function App(args)
                     screen.pixel(left + max*width, top)
                     screen.fill()
 
-                    local buf = patcher.get_destination_plus_param('buffer_'..chan)
+                    local buf = grvl.get_param('buffer_'..chan)
                     if 
                         buffers[buf].recorded 
                         or buffers[buf].manual 
@@ -235,8 +263,10 @@ local function App(args)
 
             for y = 1,4 do for x = 1,4 do
                 local chan = (x <3) and 1 or 2
+                local prefix = map[y][x]
 
-                _map[y][x]{
+                _destinations[y][x]{
+                    id = prefix..chan,
                     focused = (y == f_y and chan == f_x),
                     map_x = x,
                     map_y = y,

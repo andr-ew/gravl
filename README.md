@@ -6,6 +6,8 @@ a digital tape machine – joyfully abandoning transparency. recorded sound is t
 
 a spiritual successor to [anaphora](https://github.com/andr-ew/prosody#anaphora) & [dirge](https://github.com/andr-ew/prosody#dirge), a strange cousin of [ndls](https://github.com/andr-ew/ndls)
 
+**! please note !:** this script is a public beta. please expect some bugs & general instability. please feel free to ask questions & report any & all issues you may run into at lllllll.co.
+
 **! explore with care !** loud sounds may result from multiple extreme settings.
 
 ## hardware

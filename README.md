@@ -46,10 +46,10 @@ in the maiden [REPL](https://monome.org/docs/norns/image/wifi_maiden-images/inst
 
 | ch 1   | ch 1     | ch 2   | ch 2     |
 | ------ | -------- | ------ | -------- |
-| lvl    | old      | lvl    | old      |
-| pm frq | pm depth | pm frq | pm depth |
-| start  | end      | start  | end      |
-| end    | rate     | end    | rate     |
+| level  | ablation | level  | ablation |
+| sediment | abrasion (fine) | sediment | abrasion (fine) |
+| start    | end             | start    | end           |
+| pm frequency | pm depth | pm frequency | pm depth |
 
 horizontal & vertical orientation via arc focus component, hold two keys to flip
 
